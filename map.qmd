@@ -1,0 +1,44 @@
+---
+title: "Map"
+---
+
+```{r}
+#| message: false
+library(tidyverse)
+library(maps)
+```
+
+```{r}
+#| cache: true
+#| message: false
+attacks <- read_csv("data/attacks_clean.csv") |>
+  mutate(
+    Country_lower = str_to_lower(str_trim(Country)),
+    Fatal_clean = case_when(
+      str_trim(Fatal) == "Y" ~ "Fatal",
+      str_trim(Fatal) == "N" ~ "Non-fatal",
+      .default = "Unknown"
+    )
+  )
+
+write_rds(attacks, "data/attacks.rds")
+```
+
+```{r}
+country_counts <- attacks |>
+  count(Country_lower, name = "attacks")
+
+map_data("world") |>
+  mutate(Country_lower = str_to_lower(region)) |>
+  left_join(country_counts, by = join_by(Country_lower)) |>
+  ggplot(aes(x = long, y = lat, group = group, fill = attacks)) +
+  geom_polygon(color = "white", linewidth = 0.1) +
+  scale_fill_viridis_c(trans = "log10", na.value = "grey90") +
+  coord_quickmap() +
+  labs(
+    title = "Shark attacks by country, 1900 to present",
+    fill = "Attacks",
+    caption = "Source: Global Shark Attack File"
+  ) +
+  theme_void()
+```
