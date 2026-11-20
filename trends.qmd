@@ -1,0 +1,32 @@
+---
+title: "Trends"
+---
+
+```{r}
+#| message: false
+library(tidyverse)
+```
+
+```{r}
+attacks <- read_rds("data/attacks.rds")
+```
+
+```{r}
+attacks |>
+  add_count(Activity) |>
+  filter(n >= 50, Fatal_clean != "Unknown") |>
+  ggplot(aes(y = fct_rev(fct_infreq(Activity)), fill = Fatal_clean)) +
+  geom_bar() +
+  scale_fill_manual(values = c("Fatal" = "firebrick",
+                               "Non-fatal" = "steelblue")) +
+  labs(
+    title = "Fatal and non-fatal shark attacks by activity",
+    subtitle = "Activities with at least 50 incidents; unknown outcomes left out",
+    x = "Number of attacks",
+    y = NULL,
+    fill = NULL,
+    caption = "Source: Global Shark Attack File"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
